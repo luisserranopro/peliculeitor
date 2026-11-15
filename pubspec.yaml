@@ -1,0 +1,29 @@
+name: peliculeitor
+description: Peliculeitor migrado de Android (Java) a Flutter. Usa la API de TheMovieDB.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Sustituye a Retrofit + Gson
+  http: ^1.2.0
+  # Sustituye a SQLiteOpenHelper (BaseDatosHandler)
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  # Sustituye al Intent ACTION_VIEW para abrir el tráiler en YouTube
+  url_launcher: ^6.2.0
+  sqflite_common_ffi_web: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
