@@ -8,6 +8,7 @@ import '../services/tmdb_service.dart';
 import '../textos.dart';
 import '../widgets/comunes.dart';
 import '../widgets/tarjeta_media.dart';
+import 'acerca_de_screen.dart';
 
 /// Sustituye a PeliculasFragment y SeriesFragment, que eran casi idénticos
 /// (mismo layout fragment_media_final.xml). Una sola pantalla con un parámetro.
@@ -136,11 +137,23 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              Textos.saludo,
-              style: const TextStyle(color: Colores.textoSecundario, fontSize: 15),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    Textos.saludo,
+                    style: const TextStyle(color: Colores.textoSecundario, fontSize: 15),
+                  ),
+                ),
+                IconButton(
+                  tooltip: Textos.acercaDe,
+                  icon: const Icon(Icons.info_outline_rounded, color: Colores.textoSecundario),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AcercaDeScreen()),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
             Text(
               Textos.queVer,
               style: const TextStyle(

@@ -84,6 +84,27 @@ class Textos {
     return d.year == DateTime.now().year ? texto : '$texto ${d.year}';
   }
 
+  // Acerca de
+  static String get acercaDe => _es ? 'Acerca de' : 'About';
+  static String get descripcionApp => _es
+      ? 'Descubre películas y series, mira sus tráileres y guarda las que quieres ver y tus favoritas.'
+      : 'Discover movies and series, watch their trailers and keep a watchlist and your favorites.';
+  static String get datos => _es ? 'Datos e imágenes' : 'Data and images';
+
+  /// Aviso que exige TheMovieDB. Se muestra siempre en inglés, tal cual,
+  /// y debajo la traducción si la app está en español.
+  static const String avisoTmdb =
+      'This product uses the TMDB API but is not endorsed or certified by TMDB.';
+  static String? get avisoTmdbTraducido => _es
+      ? 'Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica.'
+      : null;
+  static String get visitarTmdb => _es ? 'Visitar themoviedb.org' : 'Visit themoviedb.org';
+  static String get notaTrailers => _es
+      ? 'Los tráileres se abren en YouTube.'
+      : 'Trailers open on YouTube.';
+  static String get privacidad => _es ? 'Política de privacidad' : 'Privacy policy';
+  static String get licencias => _es ? 'Licencias de código abierto' : 'Open source licenses';
+
   // Errores
   static String get errorCarga =>
       _es ? 'No se han podido cargar los datos' : 'Could not load data';
