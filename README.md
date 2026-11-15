@@ -96,6 +96,15 @@ lib/
 | `TextWatcher`                                    | `TextField.onChanged`                       |
 | `onResume()` del fragment de favoritos           | `ValueNotifier` en `ListasDb`: Mis listas se actualiza sola al cambiar algo |
 
+## Secciones del inicio
+
+- **Películas:** Destacadas (carrusel), Ahora en cines, Próximamente (con la
+  fecha de estreno), Populares y Mejor valoradas.
+- **Series:** Destacadas, En emisión esta semana, Populares y Mejor valoradas.
+
+Los estrenos dependen del país del dispositivo (`Config.region`); si el
+sistema no lo indica, se usa España en español y EE. UU. en el resto.
+
 ## Mis listas
 
 - **Quiero ver**: lista de deseos. Se añade desde el botón «Quiero ver» de

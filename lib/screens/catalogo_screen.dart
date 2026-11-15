@@ -28,6 +28,8 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
 
   late Future<List<ElementoMedia>> _populares;
   late Future<List<ElementoMedia>> _mejorValoradas;
+  late Future<List<ElementoMedia>> _enCines; // en series: en emisión
+  Future<List<ElementoMedia>>? _proximamente; // solo películas
 
   bool _buscando = false;
   bool _cargandoBusqueda = false;
@@ -42,12 +44,19 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
   }
 
   void _cargar() {
+    // ..ignore() evita avisos de "error no capturado" si una petición falla
+    // antes de que su sección llegue a mostrarse; el FutureBuilder sigue
+    // recibiendo el error y enseña el botón de reintentar.
     if (widget.esSeries) {
-      _populares = _api.seriesRecomendadas().then(_series);
-      _mejorValoradas = _api.seriesMejorValoradas().then(_series);
+      _populares = _api.seriesRecomendadas().then(_series)..ignore();
+      _enCines = _api.seriesEnEmision().then(_series)..ignore();
+      _mejorValoradas = _api.seriesMejorValoradas().then(_series)..ignore();
+      _proximamente = null;
     } else {
-      _populares = _api.peliculasRecomendadas().then(_peliculas);
-      _mejorValoradas = _api.peliculasMejorValoradas().then(_peliculas);
+      _populares = _api.peliculasRecomendadas().then(_peliculas)..ignore();
+      _enCines = _api.peliculasEnCines().then(_peliculas)..ignore();
+      _proximamente = _api.peliculasProximamente().then(_peliculas)..ignore();
+      _mejorValoradas = _api.peliculasMejorValoradas().then(_peliculas)..ignore();
     }
   }
 
@@ -210,42 +219,59 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
     ];
   }
 
+  /// Una sección horizontal que espera a su petición.
+  Widget _seccion(
+    String titulo,
+    Future<List<ElementoMedia>> futuro, {
+    bool conFecha = false,
+    int saltar = 0,
+  }) {
+    return CargaFutura<List<ElementoMedia>>(
+      futuro: futuro,
+      reintentar: () => setState(_cargar),
+      constructor: (lista) => SeccionHorizontal<ElementoMedia>(
+        titulo: titulo,
+        elementos: lista.skip(saltar).toList(),
+        constructor: (e) => TarjetaMedia(
+          elemento: e,
+          // En "Próximamente" se ve el día de estreno en vez del año
+          subtitulo: conFecha ? Textos.fechaCorta(e.fecha) : null,
+        ),
+      ),
+    );
+  }
+
   List<Widget> _secciones() {
+    final proximamente = _proximamente;
     return [
+      // Carrusel con las 6 más populares
       SliverToBoxAdapter(
         child: CargaFutura<List<ElementoMedia>>(
           futuro: _populares,
           altoCargando: 260,
           reintentar: () => setState(_cargar),
-          constructor: (lista) {
-            final destacadas = lista.take(_numDestacadas).toList();
-            final resto = lista.skip(_numDestacadas).toList();
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TituloSeccion(Textos.destacadas,
-                    padding: const EdgeInsets.fromLTRB(Medidas.margen, 16, Medidas.margen, 12)),
-                CarruselDestacadas(elementos: destacadas),
-                SeccionHorizontal<ElementoMedia>(
-                  titulo: Textos.populares,
-                  elementos: resto,
-                  constructor: (e) => TarjetaMedia(elemento: e),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-      SliverToBoxAdapter(
-        child: CargaFutura<List<ElementoMedia>>(
-          futuro: _mejorValoradas,
-          constructor: (lista) => SeccionHorizontal<ElementoMedia>(
-            titulo: Textos.masValoradas,
-            elementos: lista,
-            constructor: (e) => TarjetaMedia(elemento: e),
+          constructor: (lista) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TituloSeccion(Textos.destacadas,
+                  padding: const EdgeInsets.fromLTRB(Medidas.margen, 16, Medidas.margen, 12)),
+              CarruselDestacadas(elementos: lista.take(_numDestacadas).toList()),
+            ],
           ),
         ),
       ),
+      SliverToBoxAdapter(
+        child: _seccion(widget.esSeries ? Textos.enEmision : Textos.enCines, _enCines),
+      ),
+      if (proximamente != null)
+        SliverToBoxAdapter(
+          child: _seccion(Textos.proximamente, proximamente, conFecha: true),
+        ),
+      // El resto de populares (las 6 primeras ya están en el carrusel)
+      SliverToBoxAdapter(
+        child: _seccion(Textos.populares, _populares, saltar: _numDestacadas),
+      ),
+      SliverToBoxAdapter(child: _seccion(Textos.masValoradas, _mejorValoradas)),
     ];
   }
 }

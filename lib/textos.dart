@@ -18,6 +18,9 @@ class Textos {
   static String get destacadas => _es ? 'Destacadas' : 'Featured';
   static String get populares => _es ? 'Populares' : 'Popular';
   static String get masValoradas => _es ? 'Mejor valoradas' : 'Top rated';
+  static String get enCines => _es ? 'Ahora en cines' : 'Now playing';
+  static String get proximamente => _es ? 'Próximamente' : 'Coming soon';
+  static String get enEmision => _es ? 'En emisión esta semana' : 'On the air this week';
   static String get sinResultados => _es ? 'No hay resultados' : 'No results';
 
   // Fichas
@@ -67,6 +70,19 @@ class Textos {
   static String get vacioFavoritas => _es
       ? 'Aún no tienes favoritas.\nPulsa el corazón en cualquier ficha.'
       : 'No favorites yet.\nTap the heart on any title.';
+
+  /// "2026-12-05" -> "5 dic" (o "5 dic 2027" si no es este año).
+  static String fechaCorta(String fecha) {
+    final d = DateTime.tryParse(fecha);
+    if (d == null) return '';
+    const mesesEs = ['ene', 'feb', 'mar', 'abr', 'may', 'jun',
+        'jul', 'ago', 'sept', 'oct', 'nov', 'dic'];
+    const mesesEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final mes = (_es ? mesesEs : mesesEn)[d.month - 1];
+    final texto = _es ? '${d.day} $mes' : '$mes ${d.day}';
+    return d.year == DateTime.now().year ? texto : '$texto ${d.year}';
+  }
 
   // Errores
   static String get errorCarga =>

@@ -47,6 +47,24 @@ class TmdbService {
   Future<List<Pelicula>> peliculasMejorValoradas() async =>
       _lista(await _get('movie/top_rated'), 'results', Pelicula.fromJson);
 
+  /// Películas que están ahora en los cines del país del usuario.
+  Future<List<Pelicula>> peliculasEnCines() async {
+    final lista = _lista(
+        await _get('movie/now_playing', {'region': Config.region}), 'results', Pelicula.fromJson);
+    lista.sort((a, b) => b.popularidad.compareTo(a.popularidad));
+    return lista;
+  }
+
+  /// Próximos estrenos en el país del usuario, del más cercano al más lejano.
+  /// La API a veces incluye alguna ya estrenada, así que se quitan las pasadas.
+  Future<List<Pelicula>> peliculasProximamente() async {
+    final lista = _lista(
+        await _get('movie/upcoming', {'region': Config.region}), 'results', Pelicula.fromJson);
+    final hoy = DateTime.now().toIso8601String().substring(0, 10); // "aaaa-mm-dd"
+    return lista.where((p) => p.fechaEstreno.compareTo(hoy) >= 0).toList()
+      ..sort((a, b) => a.fechaEstreno.compareTo(b.fechaEstreno));
+  }
+
   Future<Pelicula> pelicula(int id) async => Pelicula.fromJson(await _get('movie/$id'));
 
   Future<List<Persona>> repartoPelicula(int id) async =>
@@ -64,6 +82,13 @@ class TmdbService {
 
   Future<List<Serie>> seriesMejorValoradas() async =>
       _lista(await _get('tv/top_rated'), 'results', Serie.fromJson);
+
+  /// Series que estrenan episodios esta semana.
+  Future<List<Serie>> seriesEnEmision() async {
+    final lista = _lista(await _get('tv/on_the_air'), 'results', Serie.fromJson);
+    lista.sort((a, b) => b.popularidad.compareTo(a.popularidad));
+    return lista;
+  }
 
   Future<Serie> serie(int id) async => Serie.fromJson(await _get('tv/$id'));
 
