@@ -18,6 +18,10 @@ class TmdbService {
   /// Hace un GET y devuelve el JSON. Lanza una excepción si el código no es 200
   /// (en el original era el switch(response.code()) de cada callback).
   Future<Map<String, dynamic>> _get(String ruta, [Map<String, String>? extra]) async {
+    if (Config.apiKey.isEmpty) {
+      throw Exception('Falta la clave de TheMovieDB. '
+          'Ejecuta con --dart-define-from-file=secrets.json');
+    }
     final uri = Uri.parse('${Config.baseUrl}$ruta').replace(queryParameters: {
       'api_key': Config.apiKey,
       'language': Config.idioma,
