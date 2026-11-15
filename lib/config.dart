@@ -15,6 +15,14 @@ class Config {
   /// getResources().getConfiguration().locale.getLanguage()
   static String get idioma => PlatformDispatcher.instance.locale.languageCode;
 
+  /// País del dispositivo ("ES", "MX"...). Los estrenos cambian según el país.
+  /// Si el sistema no lo indica, se usa España para español y EE. UU. para el resto.
+  static String get region {
+    final pais = PlatformDispatcher.instance.locale.countryCode;
+    if (pais != null && pais.isNotEmpty) return pais.toUpperCase();
+    return idioma == 'es' ? 'ES' : 'US';
+  }
+
   /// URL de un póster o foto (ancho 500) o null si no hay ruta.
   static String? imagen(String? ruta) =>
       (ruta == null || ruta.isEmpty) ? null : '${_urlImagenes}w500$ruta';

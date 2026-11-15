@@ -14,13 +14,16 @@ class TarjetaMedia extends StatelessWidget {
   final ElementoMedia elemento;
   final double ancho;
 
-  const TarjetaMedia({super.key, required this.elemento, this.ancho = 130});
+  /// Texto bajo el título. Si es null se muestra el año.
+  final String? subtitulo;
+
+  const TarjetaMedia({super.key, required this.elemento, this.ancho = 130, this.subtitulo});
 
   @override
   Widget build(BuildContext context) {
     return TarjetaPoster(
       titulo: elemento.titulo,
-      subtitulo: elemento.anio,
+      subtitulo: subtitulo ?? elemento.anio,
       urlImagen: Config.imagen(elemento.poster),
       nota: elemento.votoMedio,
       ancho: ancho,
