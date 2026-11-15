@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../config.dart';
-import '../data/favoritos_db.dart';
 import '../models/modelos.dart';
 import '../navegacion.dart';
 import '../services/tmdb_service.dart';
@@ -22,7 +21,6 @@ class SerieScreen extends StatefulWidget {
 
 class _SerieScreenState extends State<SerieScreen> {
   final _api = TmdbService.instancia;
-  final _db = FavoritosDb.instancia;
 
   late Future<Serie> _serie;
   late Future<List<Persona>> _reparto;
@@ -38,8 +36,8 @@ class _SerieScreenState extends State<SerieScreen> {
   void _cargar() {
     final id = widget.idSerie;
     _serie = _api.serie(id);
-    _reparto = _api.repartoSerie(id);
-    _similares = _api.seriesSimilares(id);
+    _reparto = _api.repartoSerie(id)..ignore();
+    _similares = _api.seriesSimilares(id)..ignore();
     _trailer = _buscarTrailer(id);
   }
 
@@ -62,48 +60,54 @@ class _SerieScreenState extends State<SerieScreen> {
       future: _serie,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(backgroundColor: Colores.fondoOscuro),
-            body: CargaFutura<Serie>(
-              futuro: _serie,
-              reintentar: () => setState(_cargar),
-              constructor: (_) => const SizedBox.shrink(),
-            ),
-          );
+          return FichaCargando(futuro: _serie, reintentar: () => setState(_cargar));
         }
         final s = snapshot.data!;
+        final elemento = s.comoElemento;
         return FichaDetalle(
-          urlImagen: Config.imagen(s.poster),
+          titulo: s.nombre,
+          urlFondo: Config.imagenFondo(s.fondo),
+          urlPoster: Config.imagen(s.poster),
           asetSinFoto: 'assets/images/sin_foto_serie.png',
-          accion: BotonFavorito(
-            comprobar: () => _db.esSerieFavorita(s.id),
-            cambiar: (fav) => fav ? _db.agregarSerie(s.id) : _db.borrarSerie(s.id),
-          ),
+          datos: [
+            elemento.anio,
+            if (s.temporadas != null) Textos.temporadas(s.temporadas!),
+          ],
+          nota: s.votoMedio,
+          votos: s.votos,
+          etiquetas: s.generos,
+          acciones: AccionesMedia(elemento: elemento, urlTrailer: _trailer),
           contenido: [
-            TituloFicha(titulo: s.nombre, valoracion: s.valoracion),
-            BotonTrailer(urlTrailer: _trailer),
-            TextoLargo(s.descripcion),
-            FilaDato(etiqueta: Textos.temporadas, valor: '${s.temporadas ?? ''}'),
-            FilaDato(etiqueta: Textos.episodios, valor: '${s.episodios ?? ''}'),
-            FilaDato(etiqueta: Textos.estado, valor: s.estado),
+            if (s.descripcion.isNotEmpty) ...[
+              TituloSeccion(Textos.sinopsis),
+              TextoDesplegable(s.descripcion),
+            ],
             CargaFutura<List<Persona>>(
               futuro: _reparto,
               constructor: (reparto) => SeccionHorizontal<Persona>(
                 titulo: Textos.reparto,
-                alto: 160,
-                elementos: reparto,
+                alto: 150,
+                elementos: reparto.take(20).toList(),
                 constructor: (persona) => TarjetaPersona(
                   nombre: persona.nombre,
+                  personaje: persona.personaje,
                   urlFoto: Config.imagen(persona.foto),
                   onTap: () => abrirActor(context, persona.id),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            TituloSeccion(Textos.detalles),
             // El original solo mostraba la primera cadena y el primer género
             // (y fallaba si la lista venía vacía). Aquí se muestran todos.
-            FilaDato(etiqueta: Textos.estudio, valor: s.cadenas.join('\n')),
-            FilaDato(etiqueta: Textos.genero, valor: s.generos.join('\n')),
+            FilaDato(etiqueta: Textos.cadena, valor: s.cadenas.join(', ')),
+            FilaDato(etiqueta: Textos.estado, valor: s.estado),
+            FilaDato(
+              etiqueta: Textos.capitulos,
+              valor: [
+                if (s.temporadas != null) Textos.temporadas(s.temporadas!),
+                if (s.episodios != null) Textos.episodios(s.episodios!),
+              ].join(' · '),
+            ),
             FilaDato(etiqueta: Textos.lanzamiento, valor: s.primeraEmision),
             CargaFutura<List<Serie>>(
               futuro: _similares,

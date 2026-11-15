@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../config.dart';
-import '../data/favoritos_db.dart';
 import '../models/modelos.dart';
 import '../navegacion.dart';
 import '../services/tmdb_service.dart';
@@ -22,7 +21,6 @@ class PeliculaScreen extends StatefulWidget {
 
 class _PeliculaScreenState extends State<PeliculaScreen> {
   final _api = TmdbService.instancia;
-  final _db = FavoritosDb.instancia;
 
   late Future<Pelicula> _pelicula;
   late Future<List<Persona>> _reparto;
@@ -39,8 +37,8 @@ class _PeliculaScreenState extends State<PeliculaScreen> {
     final id = widget.idPelicula;
     // Las cuatro peticiones salen a la vez, como los cuatro enqueue() del original.
     _pelicula = _api.pelicula(id);
-    _reparto = _api.repartoPelicula(id);
-    _similares = _api.peliculasSimilares(id);
+    _reparto = _api.repartoPelicula(id)..ignore();
+    _similares = _api.peliculasSimilares(id)..ignore();
     _trailer = _buscarTrailer(id);
   }
 
@@ -63,43 +61,43 @@ class _PeliculaScreenState extends State<PeliculaScreen> {
       future: _pelicula,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(backgroundColor: Colores.fondoOscuro),
-            body: CargaFutura<Pelicula>(
-              futuro: _pelicula,
-              reintentar: () => setState(_cargar),
-              constructor: (_) => const SizedBox.shrink(),
-            ),
-          );
+          return FichaCargando(futuro: _pelicula, reintentar: () => setState(_cargar));
         }
         final p = snapshot.data!;
+        final elemento = p.comoElemento;
         return FichaDetalle(
-          urlImagen: Config.imagen(p.poster),
-          accion: BotonFavorito(
-            comprobar: () => _db.esPeliculaFavorita(p.id),
-            cambiar: (fav) => fav ? _db.agregarPelicula(p.id) : _db.borrarPelicula(p.id),
-          ),
+          titulo: p.titulo,
+          urlFondo: Config.imagenFondo(p.fondo),
+          urlPoster: Config.imagen(p.poster),
+          datos: [elemento.anio, formatoDuracion(p.duracion)],
+          nota: p.votoMedio,
+          votos: p.votos,
+          etiquetas: p.generos,
+          acciones: AccionesMedia(elemento: elemento, urlTrailer: _trailer),
           contenido: [
-            TituloFicha(titulo: p.titulo, valoracion: p.valoracion),
-            BotonTrailer(urlTrailer: _trailer),
-            TextoLargo(p.descripcion),
+            if (p.descripcion.isNotEmpty) ...[
+              TituloSeccion(Textos.sinopsis),
+              TextoDesplegable(p.descripcion),
+            ],
             CargaFutura<List<Persona>>(
               futuro: _reparto,
               constructor: (reparto) => SeccionHorizontal<Persona>(
                 titulo: Textos.reparto,
-                alto: 160,
-                elementos: reparto,
+                alto: 150,
+                elementos: reparto.take(20).toList(),
                 constructor: (persona) => TarjetaPersona(
                   nombre: persona.nombre,
+                  personaje: persona.personaje,
                   urlFoto: Config.imagen(persona.foto),
                   onTap: () => abrirActor(context, persona.id),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            FilaDato(etiqueta: Textos.estudio, valor: p.estudios.join('\n')),
-            FilaDato(etiqueta: Textos.genero, valor: p.generos.join('\n')),
-            FilaDato(etiqueta: Textos.lanzamiento, valor: p.fechaEstreno),
+            if (p.estudios.isNotEmpty || p.fechaEstreno.isNotEmpty) ...[
+              TituloSeccion(Textos.detalles),
+              FilaDato(etiqueta: Textos.estudio, valor: p.estudios.join('\n')),
+              FilaDato(etiqueta: Textos.lanzamiento, valor: p.fechaEstreno),
+            ],
             CargaFutura<List<Pelicula>>(
               futuro: _similares,
               constructor: (similares) => SeccionHorizontal<ElementoMedia>(
