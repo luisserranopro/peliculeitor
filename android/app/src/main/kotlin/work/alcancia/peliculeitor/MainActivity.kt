@@ -1,4 +1,4 @@
-package com.example.peliculeitor
+package work.alcancia.peliculeitor
 
 import io.flutter.embedding.android.FlutterActivity
 

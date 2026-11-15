@@ -150,3 +150,34 @@ sobre azul `#0E1621`). El original vectorial está en
 
 La pantalla nativa que aparece antes de arrancar Flutter usa el mismo azul
 (`android/app/src/main/res/values/colors.xml`).
+
+## Publicar en Google Play
+
+Identificador de la app: **`work.alcancia.peliculeitor`** (no se puede cambiar
+una vez publicada).
+
+1. **Clave de subida** (una sola vez). Créala y guárdala en lugar seguro:
+   ```
+   keytool -genkey -v -keystore %USERPROFILE%\upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+   ```
+   Copia `android/key.properties.example` como `android/key.properties` y
+   rellena las contraseñas y la ruta. `key.properties` y los `.jks` están en el
+   `.gitignore`: nunca se suben. Sin `key.properties` la versión release se
+   firma con la clave de depuración (sirve para probar, no para Google Play).
+2. **Logo de TMDB.** Sus condiciones obligan a mostrar uno de sus logos
+   oficiales en la sección de créditos. Descárgalo de
+   https://www.themoviedb.org/about/logos-attribution y guárdalo como
+   `assets/images/tmdb_logo.png`. La pantalla «Acerca de» (icono ⓘ del
+   inicio) ya lo muestra junto al aviso obligatorio.
+3. **Política de privacidad.** Rellena los corchetes de
+   `docs/politica-privacidad.md` y súbelo. Su URL en GitHub es la que se
+   pone en Play Console.
+4. **Versión.** En cada subida, aumenta el número tras el `+` de
+   `version:` en `pubspec.yaml` (`1.0.0+1` → `1.0.0+2`...).
+5. **Generar el App Bundle:**
+   ```
+   flutter build appbundle --dart-define-from-file=secrets.json
+   ```
+   Resultado: `build/app/outputs/bundle/release/app-release.aab`.
+6. **Play Console.** Textos de la ficha, icono de 512 px, imagen destacada y
+   respuestas a los cuestionarios en `store/`.

@@ -1,0 +1,11 @@
+# Copia este archivo como android/key.properties y rellena tus datos.
+# key.properties está en .gitignore: NUNCA lo subas al repositorio.
+#
+# La clave se crea una sola vez con (Windows):
+#   keytool -genkey -v -keystore %USERPROFILE%\upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# En Windows escribe la ruta con barras normales (/), no con \.
+storePassword=contrasena_del_almacen
+keyPassword=contrasena_de_la_clave
+keyAlias=upload
+storeFile=C:/Users/tu_usuario/upload-keystore.jks

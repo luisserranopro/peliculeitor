@@ -1,11 +1,24 @@
+import java.io.FileInputStream
+import java.io.InputStreamReader
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Datos de la clave de firma para Google Play. Están en android/key.properties,
+// que NO se sube al repositorio (ver android/key.properties.example).
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+val hayClaveDeSubida = keystorePropertiesFile.exists()
+if (hayClaveDeSubida) {
+    keystoreProperties.load(InputStreamReader(FileInputStream(keystorePropertiesFile), Charsets.UTF_8))
+}
+
 android {
-    namespace = "com.example.peliculeitor"
+    namespace = "work.alcancia.peliculeitor"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +29,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.peliculeitor"
+        applicationId = "work.alcancia.peliculeitor"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

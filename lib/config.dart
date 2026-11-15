@@ -30,6 +30,11 @@ class Config {
   /// URL de una imagen de fondo horizontal (ancho 1280) o null si no hay ruta.
   static String? imagenFondo(String? ruta) =>
       (ruta == null || ruta.isEmpty) ? null : '${_urlImagenes}w1280$ruta';
+
+  /// Enlaces de la pantalla "Acerca de".
+  static const String urlTmdb = 'https://www.themoviedb.org';
+  static const String urlPrivacidad =
+      'https://github.com/luisserranopro/peliculeitor/blob/main/docs/politica-privacidad.md';
 }
 
 /// Paleta de la app. Mantiene el azul marino y el amarillo del original,
