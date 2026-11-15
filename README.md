@@ -3,7 +3,7 @@
 Migración a Flutter de la app Android en Java *peliculeitor* (2DAM 2023/24).
 Hace lo mismo que la original: películas y series populares y mejor valoradas,
 búsqueda, fichas de detalle con reparto, similares y tráiler, ficha de actor y
-favoritos guardados en SQLite. Los datos vienen de la API de TheMovieDB.
+dos listas personales guardadas en SQLite: **Favoritas** y **Quiero ver**. Los datos vienen de la API de TheMovieDB.
 
 ## Cómo ponerla en marcha
 
@@ -68,15 +68,15 @@ lib/
   navegacion.dart           Abrir fichas              (Intent + putExtra + startActivity)
   models/modelos.dart       Película, Serie, Persona… (las ~30 clases de ui/models)
   services/tmdb_service.dart  Llamadas a la API       (TheMovieDBService + Retrofit)
-  data/favoritos_db.dart    Favoritos en SQLite       (BaseDatosHandler)
+  data/listas_db.dart       Favoritas y Quiero ver    (BaseDatosHandler)
   screens/
     inicio_screen.dart      Barra inferior            (MainActivity + BottomNavigationView)
     catalogo_screen.dart    Películas / Series        (PeliculasFragment y SeriesFragment)
-    favoritos_screen.dart   Favoritos                 (FavoritosFragment)
+    mis_listas_screen.dart  Mis listas                (FavoritosFragment)
     pelicula_screen.dart    Ficha de película         (PeliculaActivity)
     serie_screen.dart       Ficha de serie            (SerieActivity)
     actor_screen.dart       Ficha de actor            (ActorActivity)
-  widgets/                  Tarjetas, estrellas…      (layouts de item + adaptadores)
+  widgets/                  Tarjetas, barra inferior… (layouts de item + adaptadores)
 ```
 
 ## Equivalencias principales
@@ -94,7 +94,21 @@ lib/
 | `Intent` + `putExtra` / `finish()`               | `Navigator.push` con parámetro / `pop`      |
 | `Intent.ACTION_VIEW` (YouTube)                   | paquete `url_launcher`                      |
 | `TextWatcher`                                    | `TextField.onChanged`                       |
-| `onResume()` del fragment de favoritos           | Se recarga al entrar en la pestaña y al volver de una ficha |
+| `onResume()` del fragment de favoritos           | `ValueNotifier` en `ListasDb`: Mis listas se actualiza sola al cambiar algo |
+
+## Mis listas
+
+- **Quiero ver**: lista de deseos. Se añade desde el botón «Quiero ver» de
+  cualquier ficha. En la pantalla Mis listas, el botón ✓ («Ya la he visto»)
+  la quita de la lista, con opción de deshacer.
+- **Favoritas**: igual que en el original, con el botón del corazón.
+- Las dos listas se pueden filtrar por películas o series y se ordenan de la
+  más reciente a la más antigua.
+
+La base de datos pasa a la **versión 2**: se añaden las tablas
+`peliculas_por_ver` y `series_por_ver`, y una columna `anadido` (fecha) en
+todas. Al actualizar, los favoritos que ya hubiera **se conservan**
+(el `onUpgrade` del original borraba las tablas).
 
 ## Cambios respecto a la original
 

@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
-
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'config.dart';
 import 'screens/inicio_screen.dart';
-import 'textos.dart';
 
 void main() {
   // En el navegador sqflite necesita la versión web (WebAssembly)
@@ -21,6 +19,16 @@ class PeliculeitorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final esquema = ColorScheme.fromSeed(
+      seedColor: Colores.acento,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: Colores.acento,
+      onPrimary: Colores.fondo,
+      surface: Colores.fondo,
+      onSurface: Colores.texto,
+    );
+
     return MaterialApp(
       title: 'Peliculeitor',
       debugShowCheckedModeBanner: false,
@@ -28,12 +36,22 @@ class PeliculeitorApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        colorScheme: esquema,
         scaffoldBackgroundColor: Colores.fondo,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colores.primario,
-          brightness: Brightness.dark,
-          surface: Colores.fondo,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colores.fondo,
+          foregroundColor: Colores.texto,
+          elevation: 0,
+          scrolledUnderElevation: 0,
         ),
+        snackBarTheme: SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colores.superficieAlta,
+          contentTextStyle: const TextStyle(color: Colores.texto),
+          actionTextColor: Colores.acento,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        progressIndicatorTheme: const ProgressIndicatorThemeData(color: Colores.acento),
       ),
       home: const SplashScreen(),
     );
@@ -55,9 +73,12 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const InicioScreen()),
-      );
+      Navigator.of(context).pushReplacement(PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (_, __, ___) => const InicioScreen(),
+        transitionsBuilder: (_, animacion, __, hijo) =>
+            FadeTransition(opacity: animacion, child: hijo),
+      ));
     });
   }
 
@@ -66,10 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colores.fondo,
       body: Center(
-        child: Semantics(
-          label: Textos.peliculas,
-          child: Image.asset('assets/images/logo.png', width: 250, height: 250),
-        ),
+        child: Image.asset('assets/images/logo.png', width: 220, height: 220),
       ),
     );
   }

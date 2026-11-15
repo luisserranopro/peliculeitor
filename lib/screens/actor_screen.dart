@@ -22,8 +22,8 @@ class _ActorScreenState extends State<ActorScreen> {
   final _api = TmdbService.instancia;
 
   late Future<Persona> _actor;
-  late Future<List<Pelicula>> _peliculas;
-  late Future<List<Serie>> _series;
+  late Future<List<ElementoMedia>> _peliculas;
+  late Future<List<ElementoMedia>> _series;
 
   @override
   void initState() {
@@ -33,8 +33,21 @@ class _ActorScreenState extends State<ActorScreen> {
 
   void _cargar() {
     _actor = _api.actor(widget.idActor);
-    _peliculas = _api.peliculasActor(widget.idActor);
-    _series = _api.seriesActor(widget.idActor);
+    // Ordenadas por popularidad, para que salgan primero las más conocidas
+    _peliculas = _api.peliculasActor(widget.idActor).then((lista) {
+      lista.sort((a, b) => b.popularidad.compareTo(a.popularidad));
+      return _sinRepetir(lista.map((p) => p.comoElemento));
+    })..ignore();
+    _series = _api.seriesActor(widget.idActor).then((lista) {
+      lista.sort((a, b) => b.popularidad.compareTo(a.popularidad));
+      return _sinRepetir(lista.map((s) => s.comoElemento));
+    })..ignore();
+  }
+
+  /// La API repite un título si el actor hizo varios papeles en él.
+  List<ElementoMedia> _sinRepetir(Iterable<ElementoMedia> elementos) {
+    final vistos = <int>{};
+    return elementos.where((e) => vistos.add(e.id)).toList();
   }
 
   @override
@@ -43,53 +56,46 @@ class _ActorScreenState extends State<ActorScreen> {
       future: _actor,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Scaffold(
-            appBar: AppBar(backgroundColor: Colores.fondoOscuro),
-            body: CargaFutura<Persona>(
-              futuro: _actor,
-              reintentar: () => setState(_cargar),
-              constructor: (_) => const SizedBox.shrink(),
-            ),
-          );
+          return FichaCargando(futuro: _actor, reintentar: () => setState(_cargar));
         }
         final a = snapshot.data!;
+        final nacimiento = [a.cumpleanos ?? '', a.lugarNacimiento ?? '']
+            .where((t) => t.isNotEmpty)
+            .join(' · ');
         return FichaDetalle(
-          urlImagen: Config.imagen(a.foto),
+          titulo: a.nombre,
+          // La foto del actor ocupa toda la cabecera, centrada en la cara
+          urlFondo: Config.imagen(a.foto),
+          alineacionFondo: Alignment.topCenter,
+          altoCabecera: 400,
+          datos: [a.conocidoPor ?? ''],
           contenido: [
-            TituloFicha(titulo: a.nombre),
-            FilaDato(etiqueta: Textos.cumpleanos, valor: a.cumpleanos ?? ''),
-            FilaDato(etiqueta: Textos.lugarNacimiento, valor: a.lugarNacimiento ?? ''),
-            FilaDato(
-              etiqueta: Textos.popularidad,
-              valor: a.popularidad?.toStringAsFixed(1) ?? '',
-            ),
-            FilaDato(etiqueta: Textos.conocidoPor, valor: a.conocidoPor ?? ''),
-            FilaDato(etiqueta: Textos.tambienConocido, valor: a.tambienConocido.join(', ')),
-            if (a.biografia.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Text(
-                  Textos.biografia,
-                  style: const TextStyle(
-                    color: Colores.busqueda,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            if (nacimiento.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              FilaDato(etiqueta: Textos.cumpleanos, valor: nacimiento),
+            ],
+            if (a.tambienConocido.isNotEmpty)
+              FilaDato(
+                etiqueta: Textos.tambienConocido,
+                valor: a.tambienConocido.take(3).join(', '),
               ),
-            TextoLargo(a.biografia),
-            CargaFutura<List<Pelicula>>(
+            if (a.biografia.isNotEmpty) ...[
+              TituloSeccion(Textos.biografia),
+              TextoDesplegable(a.biografia, lineas: 6),
+            ],
+            CargaFutura<List<ElementoMedia>>(
               futuro: _peliculas,
               constructor: (lista) => SeccionHorizontal<ElementoMedia>(
                 titulo: Textos.peliculasActor,
-                elementos: lista.map((p) => p.comoElemento).toList(),
+                elementos: lista,
                 constructor: (e) => TarjetaMedia(elemento: e),
               ),
             ),
-            CargaFutura<List<Serie>>(
+            CargaFutura<List<ElementoMedia>>(
               futuro: _series,
               constructor: (lista) => SeccionHorizontal<ElementoMedia>(
                 titulo: Textos.seriesActor,
-                elementos: lista.map((s) => s.comoElemento).toList(),
+                elementos: lista,
                 constructor: (e) => TarjetaMedia(elemento: e),
               ),
             ),
