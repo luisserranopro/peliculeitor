@@ -2,7 +2,7 @@
     <!-- Necesario para llamar a TheMovieDB en la versión release -->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="peliculeitor"
+        android:label="Peliculeitor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -127,3 +127,17 @@ todas. Al actualizar, los favoritos que ya hubiera **se conservan**
   pantalla (`CatalogoScreen`) con un parámetro `esSeries`.
 - Se añade una sección de **Reparto** con título en las fichas (antes la lista
   no tenía título).
+
+## Logo
+
+El logo es una entrada de cine con un botón de play (amarillo `#F3D767`
+sobre azul `#0E1621`). El original vectorial está en
+`assets/logo/logo_entrada.svg`; a partir de él se generan:
+
+- `assets/images/logo.png`: pantalla de inicio (splash) de Flutter.
+- Iconos de la app en `android/app/src/main/res/mipmap-*`,
+  `ios/Runner/Assets.xcassets/AppIcon.appiconset` y `web/icons`, además de
+  `web/favicon.png`.
+
+La pantalla nativa que aparece antes de arrancar Flutter usa el mismo azul
+(`android/app/src/main/res/values/colors.xml`).
