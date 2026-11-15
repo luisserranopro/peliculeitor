@@ -35,14 +35,28 @@ Hace falta tener Flutter instalado (`flutter doctor` sin errores para Android).
 4. Descarga dependencias y ejecuta:
    ```
    flutter pub get
-   flutter run
    ```
-5. (Opcional) Pasa tu propia clave de TheMovieDB en vez de la del proyecto original:
+5. Crea tu archivo de clave. La clave de TheMovieDB **no está en el repositorio**:
+   copia `secrets.example.json` como `secrets.json` y pon tu propia clave
+   (se consigue gratis en https://www.themoviedb.org/settings/api):
+   ```json
+   {
+     "TMDB_API_KEY": "tu_clave"
+   }
    ```
-   flutter run --dart-define=TMDB_API_KEY=tu_clave
+   `secrets.json` está en el `.gitignore`, así que nunca se sube.
+6. Ejecuta pasando el archivo de clave:
    ```
+   flutter run --dart-define-from-file=secrets.json
+   flutter run -d chrome --dart-define-from-file=secrets.json
+   ```
+   En VS Code o Android Studio, añade `--dart-define-from-file=secrets.json`
+   a los argumentos de ejecución para no escribirlo cada vez.
 
 Para comprobar el código sin emulador: `flutter analyze` y `flutter test`.
+
+> La clave no está en el código fuente, pero sí queda dentro de la app compilada
+> (en web se puede ver en el JavaScript). Para una clave de TheMovieDB es aceptable.
 
 ## Estructura
 
