@@ -87,7 +87,42 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colores.fondo,
       body: Center(
-        child: Image.asset('assets/images/logo.png', width: 220, height: 220),
+        // Entra con un pequeño zoom y fundido
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          builder: (context, valor, hijo) => Opacity(
+            opacity: valor,
+            child: Transform.scale(scale: 0.85 + 0.15 * valor, child: hijo),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/logo.png',
+                width: 140,
+                height: 140,
+                semanticLabel: 'Peliculeitor',
+              ),
+              const SizedBox(height: 24),
+              const Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: 'Pelicul'),
+                    TextSpan(text: 'eitor', style: TextStyle(color: Colores.acento)),
+                  ],
+                ),
+                style: TextStyle(
+                  color: Colores.texto,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

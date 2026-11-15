@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Fondo de la pantalla nativa que se ve antes de que arranque Flutter -->
+    <color name="fondo_splash">#0E1621</color>
+</resources>
