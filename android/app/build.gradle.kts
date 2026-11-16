@@ -42,11 +42,43 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (hayClaveDeSubida) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Con key.properties se firma con tu clave de subida (lo que pide Google Play).
+            // Sin él, se usa la clave de depuración para poder probar con
+            // `flutter run --release`, pero ese resultado NO sirve para Google Play.
+            signingConfig = if (hayClaveDeSubida) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+}
+
+// Al generar el App Bundle para Google Play (flutter build appbundle), si no
+// está key.properties la compilación se para con un aviso, en vez de firmar
+// con la clave de depuración sin decir nada.
+tasks.matching { it.name == "bundleRelease" }.configureEach {
+    val faltaClave = !hayClaveDeSubida
+    val ruta = keystorePropertiesFile.absolutePath
+    doFirst {
+        if (faltaClave) {
+            throw GradleException(
+                "No se encuentra $ruta. Créalo a partir de " +
+                    "android/key.properties.example para firmar con tu clave de subida."
+            )
         }
     }
 }
